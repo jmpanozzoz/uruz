@@ -261,10 +261,104 @@ password = your_password
             logger.error(f"Error inesperado: {e}")
             sys.exit(1)
 
-def main():
-    """Función principal."""
-    deployer = PyPIDeployer()
-    deployer.run()
+def update_version_in_file(file_path: Path, current_version: str, new_version: str):
+    content = file_path.read_text()
+    print(f"📄 Contenido original de {file_path}:")
+    print(content[:200])  # Mostrar primeros 200 caracteres
+    
+    if file_path.name == "__init__.py":
+        pattern = r'__version__\s*=\s*["\']([^"\']+)["\']'
+        replacement = f'__version__ = "{new_version}"'
+    elif file_path.name == "pyproject.toml":
+        pattern = r'version\s*=\s*["\']([^"\']+)["\']'
+        replacement = f'version = "{new_version}"'
+    elif file_path.name == "setup.py":
+        pattern = r'version\s*=\s*["\']([^"\']+)["\']'
+        replacement = f'version="{new_version}"'
+    else:
+        print(f"❌ Tipo de archivo no soportado: {file_path}")
+        return
+    
+    # Buscar el patrón antes de reemplazar
+    match = re.search(pattern, content)
+    if not match:
+        print(f"❌ No se encontró el patrón de versión en {file_path}")
+        print(f"🔍 Buscando: {pattern}")
+        return
+    
+    updated_content = re.sub(pattern, replacement, content)
+    
+    # Verificar que el contenido cambió
+    if content == updated_content:
+        print(f"⚠️ El contenido no cambió en {file_path}")
+    else:
+        file_path.write_text(updated_content)
+        print(f"✓ Actualizada versión en {file_path} de {current_version} a {new_version}")
+        print("📄 Nuevo contenido:")
+        print(updated_content[:200])
 
-if __name__ == '__main__':
+def get_current_version():
+    init_file = Path("src/uruz/__init__.py")
+    if not init_file.exists():
+        print(f"⚠️  No se encontró el archivo {init_file}")
+        return "0.1.0"
+    
+    content = init_file.read_text()
+    print("📄 Contenido de __init__.py:")
+    print(content[:200])
+    
+    version_match = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', content)
+    if not version_match:
+        print("⚠️  No se encontró la versión en __init__.py")
+        return "0.1.0"
+    
+    version = version_match.group(1)
+    print(f"📌 Versión encontrada: {version}")
+    return version
+
+def main():
+    # Obtener versión actual
+    current_version = get_current_version()
+    print(f"📦 Versión actual: {current_version}")
+    
+    # Solicitar nueva versión
+    while True:
+        new_version = input(f"📝 Ingrese la nueva versión (actual: {current_version}): ").strip()
+        if re.match(r'^\d+\.\d+\.\d+$', new_version):
+            break
+        print("❌ Formato inválido. Use x.y.z (ejemplo: 0.1.3)")
+    
+    # Confirmar acción
+    confirm = input(f"🔍 ¿Confirma actualizar a versión {new_version}? [y/N]: ")
+    if confirm.lower() != 'y':
+        print("❌ Operación cancelada")
+        return
+    
+    # Actualizar versión en archivos
+    files_to_update = [
+        Path("src/uruz/__init__.py"),
+        Path("pyproject.toml"),
+        Path("setup.py")
+    ]
+    
+    for file in files_to_update:
+        if not file.exists():
+            print(f"⚠️  No se encontró el archivo {file}")
+            continue
+        update_version_in_file(file, current_version, new_version)
+    
+    # Limpiar distribuciones anteriores
+    print("🧹 Limpiando distribuciones anteriores...")
+    subprocess.run(["rm", "-rf", "dist/", "build/", "*.egg-info/"], check=True)
+    
+    # Construir y publicar
+    print("🔨 Construyendo distribución...")
+    subprocess.run(["python", "-m", "build"], check=True)
+    
+    print("📤 Publicando en PyPI...")
+    subprocess.run(["python", "-m", "twine", "upload", "dist/*"], check=True)
+    
+    print(f"\n✅ Paquete desplegado exitosamente con versión {new_version}")
+
+if __name__ == "__main__":
     main() 

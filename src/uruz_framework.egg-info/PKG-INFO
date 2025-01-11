@@ -1,6 +1,6 @@
 Metadata-Version: 2.2
 Name: uruz-framework
-Version: 0.1.0
+Version: 0.1.3
 Summary: Framework para la creación de sistemas multiagente con IA
 Author: Tu Nombre
 Requires-Python: >=3.8
@@ -39,190 +39,445 @@ Dynamic: requires-dist
 Dynamic: requires-python
 Dynamic: summary
 
-URUZ FRAMEWORK
-=============
+# Uruz Framework
 
-Un framework moderno y extensible para la creación de sistemas multiagente con IA.
+Uruz es un framework de sistemas multiagente con IA que permite crear, gestionar y desplegar agentes inteligentes que pueden interactuar entre sí y con servicios externos.
 
-CARACTERÍSTICAS PRINCIPALES
--------------------------
+## 🌟 Características Principales
 
-* Arquitectura Multiagente
-  - Sistema robusto para la creación y gestión de múltiples agentes interactivos
-  - Comunicación entre agentes
-  - Sistema de estados y acciones
+- **Múltiples Proveedores de IA**: Soporte para OpenAI y Anthropic (Claude)
+- **Sistema de Agentes**: Crea y gestiona múltiples agentes con diferentes roles
+- **Gestión Segura**: Vault integrado para almacenamiento seguro de credenciales
+- **CLI Potente**: Interfaz de línea de comandos para todas las operaciones
+- **API REST**: Endpoints para interactuar con los agentes
+- **Caché Redis**: Optimización de respuestas y gestión de estado
+- **Base de Datos**: Almacenamiento SQLite para métricas e historial
+- **Logging Detallado**: Sistema de logs para monitoreo y debugging
 
-* Integración con LLMs
-  - Soporte nativo para OpenAI
-  - Soporte para Anthropic
-  - Extensible para otros proveedores
+## 📋 Requisitos
 
-* Seguridad
-  - Sistema de vault para credenciales
-  - Encriptación automática
-  - Gestión segura de API keys
-  - Backup y restauración de credenciales
+- Python 3.8+
+- Redis (opcional, para caché)
+- Claves API para los proveedores de IA que desees usar:
+  - OpenAI: [Obtener clave](https://platform.openai.com/api-keys)
+  - Anthropic: [Obtener clave](https://console.anthropic.com/account/keys)
 
-* API y Caché
-  - API REST basada en FastAPI
-  - Caché Redis con gestión avanzada
-  - Sistema de colas para tareas
-  - Métricas y monitoreo
+## 🚀 Instalación
 
-INSTALACIÓN
------------
+```bash
+# Instalar desde PyPI
+pip install uruz-framework
 
-Instalación básica:
-    pip install uruz-framework
+# O instalar en modo desarrollo
+git clone https://github.com/jmpanozzoz/uruz.git
+cd uruz
+pip install -e .
+```
 
-Instalación para desarrollo:
-    git clone https://github.com/tuusuario/uruz-framework.git
-    cd uruz-framework
-    pip install -e ".[dev]"
+## ⚙️ Configuración
 
-INICIO RÁPIDO
-------------
+1. Crea un archivo `.env` en la raíz del proyecto:
 
-1. Configuración:
-   Crear archivo .env:
-   
-   DATABASE_URL=sqlite:///./uruz.db
-   REDIS_HOST=localhost
-   REDIS_PORT=6379
-   OPENAI_API_KEY=tu-api-key-aquí
-   ANTHROPIC_API_KEY=tu-api-key-aquí
+```env
+OPENAI_API_KEY=tu-clave-openai
+ANTHROPIC_API_KEY=tu-clave-anthropic
+SSH_KEY_PATH=~/.ssh/id_rsa
 
-2. Comandos CLI:
+# Opcional para Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+```
 
-   Iniciar servidor:
-       uruz serve
+2. Inicializa el vault para credenciales:
 
-   Ver estado:
-       uruz status
+```bash
+python scripts/setup_credentials.py
+```
 
-   Gestionar agentes:
-       uruz list-agents
-       uruz show-metrics
-       uruz show-history
+## 🤖 Creación de Agentes
 
-   Gestionar vault:
-       uruz backup-vault
-       uruz restore-vault <path>
+### Usando el CLI
 
-   Gestionar caché:
-       uruz clear-cache
-       uruz show-queues
+```bash
+# Crear un agente LLM con OpenAI
+uruz create-agent --name mi_agente --type llm --provider openai
 
-   Ver documentación completa:
-       docs/cli.txt
+# Crear un agente para gestión de servidores
+uruz create-agent --name servidor_agent --type server --provider anthropic
+```
 
-3. Uso programático:
+### Configuración Manual
 
-   from uruz.core.agent import Agent
-   from uruz.security.vault import Vault
-   from uruz.llm.openai_provider import OpenAIProvider
+Crea un archivo YAML en el directorio `agents/`:
 
-   # Configurar vault
-   vault = Vault()
-   vault.store_credential("openai_api_key", "tu-api-key")
+```yaml
+name: mi_agente
+type: llm
+provider: openai
+config:
+  model: gpt-3.5-turbo-1106
+  temperature: 0.7
+  max_tokens: 1024
+  system_prompt: |
+    Eres un asistente amigable y servicial.
+    Siempre respondes en español.
+  openai_api_key: ${OPENAI_API_KEY}
+```
 
-   # Crear agente
-   class MyAgent(Agent):
-       async def process_message(self, message):
-           response = await self.llm.generate(message["content"])
-           return {"response": response}
-       
-       async def act(self):
-           return [{"status": "active"}]
+## 🛠 Ejemplos de Código
 
-   # Usar agente
-   agent = MyAgent("agent-1", config={})
+### Ejemplo Básico: Asistente Simple
 
-ESTRUCTURA DEL PROYECTO
----------------------
+```python
+from uruz.core.llm_agent import LLMAgent
+from uruz.llm.openai_provider import OpenAIProvider
 
-src/uruz/
-    core/           - Componentes principales
-    llm/            - Integraciones con LLMs
-    cache/          - Sistemas de caché
-    storage/        - Almacenamiento
-    api/            - Servidor API
-    security/       - Gestión de seguridad
-    utils/          - Utilidades y logging
+# Configuración del agente
+config = {
+    "model": "gpt-3.5-turbo-1106",
+    "temperature": 0.7,
+    "max_tokens": 1024,
+    "system_prompt": "Eres un asistente amigable que responde en español."
+}
 
-tests/             - Tests unitarios y de integración
-docs/              - Documentación detallada
-    cli.txt        - Referencia completa de comandos
-    api.txt        - Documentación de la API
-    config.txt     - Guía de configuración
-examples/          - Ejemplos de uso
-scripts/           - Scripts de utilidad
+# Crear y usar el agente
+async def main():
+    # Inicializar agente
+    agent = LLMAgent("asistente", config)
 
-DESARROLLO
----------
+    # Enviar mensaje y obtener respuesta
+    response = await agent.process_message({
+        "content": "¿Cuál es la capital de Francia?"
+    })
 
-1. Instalar dependencias:
-   pip install -e ".[dev,test]"
+    print(response["response"])
 
-2. Ejecutar tests:
-   pytest
-   pytest --cov=uruz
+# Ejecutar
+import asyncio
+asyncio.run(main())
+```
 
-3. Verificar estilo:
-   black src/
-   flake8 src/
+### Ejemplo Intermedio: Agente con Memoria
 
-DEPENDENCIAS
------------
+```python
+from uruz.core.llm_agent import LLMAgent
+from uruz.storage.memory import ConversationMemory
 
-Base:
-- fastapi>=0.68.0
-- uvicorn>=0.15.0
-- pydantic>=1.8.2
-- cryptography>=3.4.7
-- redis>=4.0.0
-- sqlalchemy>=1.4.23
-- openai>=0.27.0
-- anthropic>=0.3.0
-- click>=8.0.0
-- paramiko>=3.4.0
+class AgentConMemoria(LLMAgent):
+    def __init__(self, agent_id: str, config: dict):
+        super().__init__(agent_id, config)
+        self.memory = ConversationMemory()
 
-Desarrollo:
-- black>=22.3.0
-- isort>=5.10.1
-- flake8>=4.0.1
-- mypy>=0.950
+    async def process_message(self, message: dict) -> dict:
+        # Obtener historial
+        history = self.memory.get_history()
 
-Testing:
-- pytest>=7.1.2
-- pytest-asyncio>=0.18.3
-- pytest-cov>=3.0.0
+        # Crear prompt con contexto
+        context = "\n".join([
+            f"Usuario: {m['content']}\nAsistente: {m['response']}"
+            for m in history
+        ])
 
-DOCUMENTACIÓN
-------------
+        prompt = f"""
+        Historial de conversación:
+        {context}
 
-Consultar la carpeta docs/ para:
-- Guía de inicio (getting_started.txt)
-- Configuración (configuration.txt)
-- Referencia API (api_reference.txt)
+        Usuario: {message['content']}
+        """
 
-CONTRIBUIR
----------
+        # Generar respuesta
+        response = await self.llm.generate(prompt)
+
+        # Guardar en memoria
+        self.memory.add_interaction(message["content"], response)
+
+        return {"response": response}
+
+# Uso
+async def main():
+    config = {
+        "model": "gpt-3.5-turbo-1106",
+        "temperature": 0.7,
+        "max_tokens": 1024
+    }
+
+    agent = AgentConMemoria("asistente_memoria", config)
+
+    # Primera pregunta
+    resp1 = await agent.process_message({
+        "content": "Mi nombre es Juan"
+    })
+
+    # Segunda pregunta (con contexto)
+    resp2 = await agent.process_message({
+        "content": "¿Cuál es mi nombre?"
+    })
+
+    print(resp1["response"])
+    print(resp2["response"])
+```
+
+### Ejemplo Avanzado: Agente para Servidores
+
+```python
+from uruz.core.server_agent import ServerAgent
+from uruz.security.vault import Vault
+from typing import Dict, Any
+
+class AdminServidor(ServerAgent):
+    def __init__(self, agent_id: str, config: dict):
+        super().__init__(agent_id, config)
+        self.vault = Vault()
+
+    async def ejecutar_comando(self, servidor: str, comando: str) -> Dict[str, Any]:
+        # Obtener credenciales del vault
+        credenciales = self.vault.get_credential("server_credentials")
+        if servidor not in credenciales:
+            return {"error": f"No se encontraron credenciales para {servidor}"}
+
+        # Ejecutar comando SSH
+        try:
+            output, error = await self.execute_ssh_command(servidor, comando)
+            return {
+                "output": output,
+                "error": error,
+                "success": not error
+            }
+        except Exception as e:
+            return {"error": str(e)}
+
+    async def process_message(self, message: dict) -> dict:
+        # Analizar el mensaje con LLM
+        prompt = f"""
+        Analiza el siguiente mensaje y extrae:
+        1. El servidor objetivo
+        2. El comando a ejecutar
+
+        Mensaje: {message['content']}
+        """
+
+        analysis = await self.llm.generate(prompt)
+
+        # Ejecutar comando
+        if "ejecutar" in message["content"].lower():
+            resultado = await self.ejecutar_comando(
+                servidor="servidor_principal",
+                comando="ls -la"  # Ejemplo
+            )
+
+            return {
+                "response": f"Resultado de la ejecución: {resultado}",
+                "data": resultado
+            }
+
+        return {"response": analysis}
+
+# Uso
+async def main():
+    config = {
+        "model": "claude-3-haiku-20240307",
+        "temperature": 0.7,
+        "max_tokens": 1024,
+        "system_prompt": """
+        Eres un asistente especializado en administración de servidores.
+        Analiza las solicitudes y ejecuta comandos de forma segura.
+        """
+    }
+
+    agent = AdminServidor("admin_servidor", config)
+
+    # Ejemplo de uso
+    response = await agent.process_message({
+        "content": "Ejecuta un listado del directorio en el servidor principal"
+    })
+
+    print(response["response"])
+```
+
+### Ejemplo de Integración con API REST
+
+```python
+from fastapi import FastAPI
+from uruz.core.llm_agent import LLMAgent
+from uruz.api.server import AgentServer
+
+# Crear servidor FastAPI
+app = FastAPI()
+server = AgentServer()
+
+# Configurar agente
+config = {
+    "model": "gpt-3.5-turbo-1106",
+    "temperature": 0.7,
+    "max_tokens": 1024
+}
+agent = LLMAgent("asistente_api", config)
+
+# Registrar agente
+server.add_agent(agent)
+
+# Endpoints personalizados
+@app.post("/chat/{agent_id}")
+async def chat(agent_id: str, message: str):
+    response = await server.process_message(
+        agent_id=agent_id,
+        message={"content": message}
+    )
+    return response
+
+# Ejecutar
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+```
+
+Estos ejemplos muestran diferentes niveles de complejidad y casos de uso:
+
+1. **Ejemplo Básico**: Muestra cómo crear y usar un agente simple para responder preguntas.
+2. **Ejemplo Intermedio**: Implementa un agente con memoria que mantiene el contexto de la conversación.
+3. **Ejemplo Avanzado**: Crea un agente especializado para administración de servidores con acceso seguro mediante vault.
+4. **Integración API**: Muestra cómo integrar agentes con una API REST usando FastAPI.
+
+Cada ejemplo puede ser adaptado y extendido según las necesidades específicas del proyecto.
+
+## 🛠️ Uso del CLI
+
+### Comandos Básicos
+
+```bash
+# Iniciar el servidor
+uruz serve
+
+# Listar agentes activos
+uruz list-agents
+
+# Ver estado del sistema
+uruz status
+
+# Ver métricas de uso
+uruz show-metrics
+
+# Ver historial de comandos
+uruz show-history
+```
+
+### Gestión de Vault y Caché
+
+```bash
+# Crear backup del vault
+uruz backup-vault
+
+# Restaurar backup
+uruz restore-vault <path_backup>
+
+# Limpiar caché
+uruz clear-cache
+
+# Ver estado de colas
+uruz show-queues
+```
+
+### Mantenimiento
+
+```bash
+# Ejecutar tareas de mantenimiento
+uruz maintenance --days 30
+```
+
+## 🔌 API REST
+
+El servidor expone endpoints en `http://localhost:8000`:
+
+```bash
+# Endpoints principales
+GET /agents - Lista todos los agentes
+POST /agents/{agent_id}/message - Envía mensaje a un agente
+GET /metrics - Obtiene métricas del sistema
+GET /status - Estado del sistema
+```
+
+## 📊 Monitoreo
+
+### Logs
+
+Los logs se almacenan en el directorio `logs/`:
+
+- `app.log`: Logs generales
+- `access.log`: Logs de acceso HTTP
+- `agent_{id}.log`: Logs específicos de cada agente
+
+### Métricas
+
+Accesibles vía CLI o API:
+
+- Uso de tokens
+- Tiempos de respuesta
+- Tasa de éxito
+- Errores
+
+## 🔒 Seguridad
+
+- Credenciales almacenadas en vault encriptado
+- Soporte para claves SSH
+- Backups automáticos del vault
+- Sanitización de inputs
+
+## 🛠️ Desarrollo
+
+### Estructura del Proyecto
+
+```
+uruz/
+├── src/
+│   └── uruz/
+│       ├── api/        # API REST
+│       ├── core/       # Lógica central
+│       ├── llm/        # Proveedores LLM
+│       ├── security/   # Vault y seguridad
+│       └── storage/    # Base de datos
+├── agents/            # Configuración de agentes
+├── scripts/          # Scripts de utilidad
+├── tests/           # Tests
+└── docs/           # Documentación
+```
+
+### Comandos de Desarrollo
+
+```bash
+# Instalar dependencias de desarrollo
+pip install -r requirements/dev.txt
+
+# Ejecutar tests
+pytest
+
+# Construir distribución
+python scripts/deploy.py
+```
+
+## 🤝 Contribuciones
 
 1. Fork el repositorio
-2. Crear rama feature (git checkout -b feature/NuevaCaracteristica)
-3. Commit cambios (git commit -m 'Agregar característica')
-4. Push a la rama (git push origin feature/NuevaCaracteristica)
-5. Crear Pull Request
+2. Crea una rama (`git checkout -b feature/mejora`)
+3. Commit tus cambios (`git commit -am 'Agrega mejora'`)
+4. Push a la rama (`git push origin feature/mejora`)
+5. Crea un Pull Request
 
-LICENCIA
---------
+## 📝 Licencia
 
-MIT License - Ver archivo LICENSE
+Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
 
-CONTACTO
---------
+## 🆘 Soporte
 
-Autor: Tu Nombre
-Email: email@ejemplo.com
-GitHub: https://github.com/tuusuario/uruz-framework
+- Documentación: Ver directorio `docs/`
+- Issues: Usar el sistema de issues de GitHub
+- Contacto: [jm.panozzozenere@gmail.com]
+
+## 🙏 Agradecimientos
+
+- OpenAI por su API GPT
+- Anthropic por Claude
+- Todos los contribuidores
+
+---
+
+Hecho con ❤️ usando Python

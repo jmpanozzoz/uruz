@@ -6,7 +6,7 @@ def read_requirements(filename):
 
 setup(
     name="uruz-framework",
-    version="0.1.0",
+    version="0.1.3",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     
@@ -20,7 +20,7 @@ setup(
     # Metadatos
     author="Tu Nombre",
     description="Framework para la creación de sistemas multiagente con IA",
-    long_description=open("README.txt").read(),
+    long_description=open("README.md").read(),
     long_description_content_type="text/plain",
     
     # Entry points para CLI
