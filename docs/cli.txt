@@ -1,0 +1,124 @@
+COMANDOS DE LA CLI DE URUZ
+=======================
+
+Este documento describe todos los comandos disponibles en la interfaz de línea de comandos (CLI) de Uruz.
+
+1. INICIAR SERVIDOR
+------------------
+Comando: serve
+Descripción: Inicia el servidor API de Uruz
+Opciones:
+  --host: Host para el servidor (default: configuración)
+  --port: Puerto para el servidor (default: configuración)
+  --debug: Activa modo debug
+
+Ejemplos:
+  uruz serve
+  uruz serve --debug --port 8080
+
+2. LISTAR AGENTES
+----------------
+Comando: list-agents
+Descripción: Muestra los agentes activos en el sistema
+Ejemplo:
+  uruz list-agents
+
+3. ESTADO DEL SISTEMA
+--------------------
+Comando: status
+Descripción: Muestra el estado actual del sistema
+Opciones:
+  --check-deps: Verifica las dependencias instaladas
+
+Ejemplos:
+  uruz status
+  uruz status --check-deps
+
+4. MÉTRICAS DE USO
+-----------------
+Comando: show-metrics
+Descripción: Muestra estadísticas de uso de los agentes
+Información mostrada:
+- Tiempo de procesamiento
+- Tokens utilizados
+- Tasa de éxito
+- Errores encontrados
+
+Ejemplo:
+  uruz show-metrics
+
+5. HISTORIAL DE COMANDOS
+-----------------------
+Comando: show-history
+Descripción: Muestra el historial de comandos ejecutados
+Opciones:
+  --server: Filtrar por servidor específico
+  --limit: Número máximo de registros (default: 10)
+
+Ejemplos:
+  uruz show-history
+  uruz show-history --server groovinads --limit 20
+
+6. MANTENIMIENTO
+---------------
+Comando: maintenance
+Descripción: Ejecuta tareas de mantenimiento del sistema
+Opciones:
+  --days: Días de antigüedad para limpieza (default: 30)
+
+Ejemplos:
+  uruz maintenance
+  uruz maintenance --days 60
+
+7. BACKUP DEL VAULT
+------------------
+Comando: backup-vault
+Descripción: Crea una copia de seguridad del vault
+Ubicación: data/backups/vault_YYYYMMDD_HHMMSS/
+
+Ejemplo:
+  uruz backup-vault
+
+8. RESTAURAR VAULT
+-----------------
+Comando: restore-vault
+Descripción: Restaura una copia de seguridad del vault
+Argumentos:
+  backup_path: Ruta al backup a restaurar
+
+Ejemplo:
+  uruz restore-vault data/backups/vault_20240111_120000/
+
+9. LIMPIAR CACHÉ
+---------------
+Comando: clear-cache
+Descripción: Limpia el caché de Redis
+Opciones:
+  --pattern: Patrón para limpiar caché específico (default: *)
+
+Ejemplos:
+  uruz clear-cache
+  uruz clear-cache --pattern "llm:response:*"
+
+10. ESTADO DE COLAS
+------------------
+Comando: show-queues
+Descripción: Muestra el estado de las colas de Redis
+Información mostrada:
+- Cola de tareas
+- Cola de eventos
+- Número de elementos en cada cola
+
+Ejemplo:
+  uruz show-queues
+
+CARACTERÍSTICAS GENERALES
+========================
+- Todos los comandos incluyen manejo de errores
+- Logging detallado de operaciones
+- Salida formateada para mejor legibilidad
+- Opciones de configuración flexibles
+- Integración con sistema de métricas
+
+Para más información sobre cada comando, puede usar:
+uruz [comando] --help 
