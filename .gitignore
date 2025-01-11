@@ -43,3 +43,6 @@ Thumbs.db
 # Archivos de configuración local
 .env
 .env.local
+
+# Archivos de control de Git
+.gitkeep

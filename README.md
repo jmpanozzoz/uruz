@@ -435,7 +435,6 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 - OpenAI por su API GPT
 - Anthropic por Claude
-- Todos los contribuidores
 
 ---
 
