@@ -1,30 +1,64 @@
+"""
+Prueba completa del sistema Uruz Framework.
+"""
+
 import asyncio
 from uruz.core.environment import Environment
-from uruz.agents.llm_agent import LLMAgent # type: ignore
+from uruz.security.vault import Vault
 
 async def test_system():
+    """Ejecuta una prueba completa del sistema."""
+    
+    print("\n🔧 Configurando sistema...")
+    
+    # 1. Configurar credenciales
+    vault = Vault()
+    vault.store_credential("openai_api_key", "tu-api-key-aqui")
+    
+    # 2. Inicializar entorno
     env = Environment()
     
-    # Crear y registrar agente
-    agent = LLMAgent(
-        agent_id="test-agent",
-        config={
-            "api_key": "tu-api-key-aquí",
-            "name": "Test Agent"
-        }
-    )
-    env.add_agent(agent)
+    # 3. Configurar agente de prueba
+    agent_config = {
+        "name": "test_agent",
+        "type": "llm",
+        "provider": "openai",
+        "model": "gpt-4",
+        "max_tokens": 1000,
+        "temperature": 0.7,
+        "system_prompt": "Eres un asistente de pruebas que verifica el funcionamiento del sistema."
+    }
     
-    # Probar funcionamiento
+    # 4. Registrar agente
+    print("\n🤖 Registrando agente de prueba...")
+    agent = await env.register_agent(agent_config)
+    
+    # 5. Probar funcionalidades
+    print("\n🔄 Probando funcionalidades...")
+    
+    # 5.1 Procesar mensaje
+    print("\n📝 Probando procesamiento de mensajes...")
     response = await agent.process_message({
-        "content": "Hola, ¿está funcionando el sistema?"
+        "content": "Confirma que estás funcionando correctamente."
     })
+    print(f"Respuesta: {response['response']}")
     
-    print("Respuesta:", response)
+    # 5.2 Ejecutar ciclo del entorno
+    print("\n⚡ Probando ciclo del entorno...")
+    results = await env.step()
+    print(f"Resultados: {results}")
     
-    # Verificar estado del sistema
-    state = env.get_state()
-    print("\nEstado del sistema:", state)
+    # 5.3 Obtener métricas
+    print("\n📊 Probando métricas...")
+    metrics = env.get_metrics(agent.name)
+    print("Métricas del agente:")
+    print(f"- Mensajes procesados: {metrics['processed_messages']}")
+    print(f"- Tokens consumidos: {metrics['total_tokens']}")
+    print(f"- Tiempo promedio de respuesta: {metrics['avg_response_time']:.2f}s")
+    
+    print("\n✅ Pruebas completadas exitosamente!")
 
 if __name__ == "__main__":
-    asyncio.run(test_system()) 
+    print("🚀 Iniciando pruebas del sistema...")
+    asyncio.run(test_system())
+    print("\n✨ Sistema verificado exitosamente!") 

@@ -1,36 +1,57 @@
 """
-Ejemplo 1: Agente Simple
-Este ejemplo muestra cómo crear y usar un agente básico que responde mensajes.
+Ejemplo de un agente simple que responde mensajes usando un template predefinido.
 """
 
 import asyncio
+from uruz.core.environment import Environment
 from uruz.core.agent import Agent
-from uruz.security.vault import Vault
 
 class SimpleAgent(Agent):
-    async def process_message(self, message):
-        # Simplemente devuelve una respuesta estática
-        return {
-            "response": f"Recibido mensaje: {message['content']}"
-        }
+    """Un agente simple que responde con un mensaje predefinido."""
     
-    async def act(self):
-        # Este agente no realiza acciones autónomas
-        return []
+    def __init__(self, name: str, config: dict = None):
+        super().__init__(name, config)
+        self.template = config.get("template", "Hola, soy {name}. {message}")
+    
+    async def process_message(self, message: dict) -> dict:
+        """Procesa un mensaje usando el template configurado."""
+        response = self.template.format(
+            name=self.name,
+            message=message.get("content", "")
+        )
+        return {"response": response}
+    
+    async def act(self) -> list:
+        """El agente no realiza acciones autónomas."""
+        return [{"status": "active"}]
 
 async def main():
-    # Crear y configurar agente
-    agent = SimpleAgent(
-        agent_id="agente-simple",
-        config={"name": "Asistente Básico"}
-    )
+    # 1. Inicializar entorno
+    env = Environment()
     
-    # Enviar un mensaje al agente
+    # 2. Configurar agente
+    agent_config = {
+        "template": "¡Hola! Soy {name} y recibí tu mensaje: {message}"
+    }
+    
+    # 3. Crear y registrar agente
+    agent = SimpleAgent("saludador", config=agent_config)
+    env.add_agent(agent)
+    
+    # 4. Enviar mensaje al agente
     response = await agent.process_message({
-        "content": "¡Hola!"
+        "content": "¿Cómo estás?"
     })
     
-    print(f"Respuesta del agente: {response}")
+    print("\nRespuesta del agente:")
+    print(response["response"])
+    
+    # 5. Ejecutar ciclo del entorno
+    results = await env.step()
+    print("\nEstado del agente:")
+    print(results)
 
 if __name__ == "__main__":
-    asyncio.run(main()) 
+    print("🚀 Iniciando ejemplo de agente simple...")
+    asyncio.run(main())
+    print("\n✨ Ejemplo completado exitosamente!") 

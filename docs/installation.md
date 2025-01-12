@@ -1,118 +1,164 @@
-# 📥 Guía de Instalación de Uruz Framework
+# 📥 Instalación de Uruz Framework
 
-Esta guía explica cómo instalar y configurar Uruz Framework en diferentes sistemas operativos.
+## Requisitos del Sistema
 
-## 📋 Requisitos Previos
-
-### General
+### Python
 - Python 3.8 o superior
 - pip (gestor de paquetes de Python)
-- Git
 
-### Por Sistema Operativo
+### Base de Datos
+- SQLite 3 (incluido con Python)
 
-#### macOS
-- Homebrew
-- Command Line Tools
+### Cache (Opcional)
+- Redis 6.0 o superior
 
-#### Windows
-- Windows Subsystem for Linux (WSL)
-- Visual Studio Build Tools
+## Instalación del Framework
 
-#### Linux
-- build-essential
-- python3-dev
-
-## 🚀 Instalación por Sistema Operativo
-
-### 1. macOS
-
+### Desde PyPI
 ```bash
-# Instalar Homebrew (si no está instalado)
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-# Clonar repositorio
-git clone https://github.com/tuusuario/uruz-framework.git
-cd uruz-framework
-
-# Ejecutar script de inicio
-chmod +x scripts/start_mac.sh
-./scripts/start_mac.sh
+pip install uruz-framework
 ```
 
-### 2. Windows
-
+### Modo Desarrollo
 ```bash
-# Instalar WSL (si no está instalado)
-wsl --install
-
-# Clonar repositorio
-git clone https://github.com/tuusuario/uruz-framework.git
-cd uruz-framework
-
-# Ejecutar script de inicio
-scripts\start_windows.bat
+git clone https://github.com/tu-usuario/uruz.git
+cd uruz
+pip install -e .
 ```
 
-### 3. Linux
+## Configuración Inicial
 
+### 1. Inicializar Proyecto
 ```bash
-# Instalar dependencias
-sudo apt update && sudo apt install python3-dev build-essential
+# Crear nuevo proyecto
+uruz init --name mi_proyecto
 
-# Clonar repositorio
-git clone https://github.com/tuusuario/uruz-framework.git
-cd uruz-framework
-
-# Ejecutar script de inicio
-chmod +x scripts/start_linux.sh
-./scripts/start_linux.sh
+# Entrar al directorio del proyecto
+cd mi_proyecto
 ```
 
-## ✅ Verificación de la Instalación
+### 2. Configurar Credenciales
+```bash
+# Configurar credenciales del sistema
+uruz setup-credentials
 
-Para verificar que todo está funcionando:
+# Verificar credenciales almacenadas
+uruz list-credentials
+```
 
-1. El script de inicio debería mostrar ✓ en todas las verificaciones
-2. Probar crear un agente:
+### 3. Verificar Instalación
+```bash
+# Verificar estado del sistema
+uruz check-system
+```
+
+### 4. Iniciar Servicios
+```bash
+# Iniciar servicios del sistema
+uruz start
+
+# O iniciar solo el servidor API
+uruz serve
+```
+
+## Estructura del Proyecto
+```
+mi_proyecto/
+├── agents/               # Configuraciones de agentes
+│   └── example_agent.yaml
+├── api/                 # Código del servidor API
+│   └── main.py
+├── config/             # Configuraciones
+│   └── environments/
+│       ├── development.yaml
+│       └── production.yaml
+├── data/               # Datos y almacenamiento
+│   ├── backups/
+│   ├── logs/
+│   └── storage/
+├── .env               # Variables de entorno
+└── .env.example      # Ejemplo de variables de entorno
+```
+
+## Mantenimiento
+
+### Limpieza del Sistema
+```bash
+# Ver categorías disponibles
+uruz clean list-categories
+
+# Limpiar todo
+uruz clean all
+
+# Limpiar una categoría específica
+uruz clean category cache
+```
+
+### Tareas de Mantenimiento
+```bash
+# Ejecutar todas las tareas
+uruz maintenance run-all
+
+# Limpiar logs antiguos
+uruz maintenance cleanup-logs --days 30
+
+# Optimizar base de datos
+uruz maintenance optimize-db
+```
+
+### Gestión de Credenciales
+```bash
+# Crear backup del vault
+uruz backup-vault
+
+# Restaurar vault desde backup
+uruz restore-vault --file backup.json
+
+# Limpiar caché
+uruz clear-cache
+```
+
+## Solución de Problemas
+
+### Redis no inicia
+1. Verificar que Redis está instalado:
    ```bash
-   uruz create-agent --name "test" --type simple
+   redis-cli ping
    ```
-3. Ejecutar el test del sistema:
+2. Iniciar Redis manualmente:
+   - macOS: `brew services start redis`
+   - Linux: `sudo systemctl start redis`
+   - Windows: Iniciar desde Servicios
+
+### Errores de Permisos
+1. Verificar permisos de directorios:
    ```bash
-   python examples/test_system.py
+   ls -la data/
+   ```
+2. Ajustar permisos si es necesario:
+   ```bash
+   chmod -R 755 data/
    ```
 
-## 🔧 Solución de Problemas
+### Base de Datos
+1. Verificar conexión:
+   ```bash
+   uruz status
+   ```
+2. Optimizar si hay problemas de rendimiento:
+   ```bash
+   uruz maintenance optimize-db
+   ```
 
-### 1. Redis no inicia
-- **macOS**: `brew services restart redis`
-- **Windows**: Reiniciar WSL
-- **Linux**: `sudo systemctl restart redis`
+## Actualización
 
-### 2. Error de permisos
-- **macOS/Linux**: `sudo chown -R $USER:$USER .`
-- **Windows**: Ejecutar como administrador
-
-### 3. Error de conexión a la API
-- Verificar `.env`
-- Comprobar que el puerto no está en uso
-
-## 🛠️ Mantenimiento
-
-### 1. Actualizar el framework
+### Actualizar Framework
 ```bash
-pip install -e ".[dev]" --upgrade
+pip install --upgrade uruz-framework
 ```
 
-### 2. Limpiar caché
+### Limpiar Caché después de Actualizar
 ```bash
-redis-cli flushall
-```
-
-### 3. Reiniciar servicios
-```bash
-./scripts/start_{os}.sh
-```
-
-> Para más información, consultar la documentación en `docs/` 
+uruz clear-cache
+uruz clean category cache
+``` 

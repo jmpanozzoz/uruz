@@ -52,3 +52,7 @@ class Vault:
         encrypted_value = self.credentials[key]
         decrypted_value = self.fernet.decrypt(encrypted_value)
         return json.loads(decrypted_value) 
+    
+    def list_credentials(self) -> Dict[str, Any]:
+        """Lista todas las credenciales almacenadas."""
+        return {k: self.get_credential(k) for k in self.credentials.keys()} 

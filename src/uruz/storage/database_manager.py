@@ -1,6 +1,7 @@
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from .database import SQLAlchemyProvider
 from .models import Base, CommandHistory, AgentMetrics, StoredCredential
 
@@ -12,6 +13,7 @@ class DatabaseManager:
         self.db.connect()
         # Crear tablas si no existen
         Base.metadata.create_all(self.db.engine)
+        self.AgentMetrics = AgentMetrics
     
     def log_command(self, server_name: str, command: str, executed_by: str,
                    status: str, output: Optional[str] = None, error: Optional[str] = None) -> None:
@@ -92,4 +94,14 @@ class DatabaseManager:
     
     def close(self):
         """Cierra la conexión a la base de datos."""
-        self.db.disconnect() 
+        self.db.disconnect()
+    
+    def optimize_database(self) -> bool:
+        """Optimiza la base de datos."""
+        try:
+            with self.db.get_session() as session:
+                session.execute(text('VACUUM'))
+                session.execute(text('ANALYZE'))
+            return True
+        except Exception as e:
+            return False 
